@@ -7,7 +7,7 @@ from subprocess import PIPE, Popen
 from tempfile import mkdtemp, mkstemp
 
 
-def pandoc(m, hl=None, tar=None, template=None):
+def pandoc(m, hl=None, tar=None, template=None, extension=None):
 
     td = None
     if tar and template is None:
@@ -22,10 +22,10 @@ def pandoc(m, hl=None, tar=None, template=None):
         tgz.close()
 
     ret = False
-    tf, tp = mkstemp(suffix=".pdf")
+    tf, tp = mkstemp(suffix=extension)
     try:
         cmd = ["pandoc", 
-            "-t", "latex", 
+            # "-t", "latex", 
             "-o", tp]
         if hl is not None:
             cmd.insert(1, "--highlight-style")
@@ -89,9 +89,10 @@ def app(environ, start_response):
     title = post['t'].value if 't' in post else 'pandoc_generated'
     template = post['tpl'].value if 'tpl' in post else None
     tar = post['tar'] if 'tar'  in post else None
+    extension = post['extension'].value if 'extension' in post else '.pdf'
 
     try:
-        pdf = pandoc(m, hl, tar, template)
+        pdf = pandoc(m, hl, tar, template, extension)
     except Exception as e:
         response_headers = [('Content-Type', 'text/plain')]
         set_cors(response_headers, environ)
@@ -99,8 +100,8 @@ def app(environ, start_response):
         return ["Something went wrong...", str(e)]
 
     response_headers = [
-        ('Content-Type', 'application/pdf'),
-        ('Content-Disposition', 'attachment; filename=' + title + '.pdf'),
+        ('Content-Type', 'application/pdf' if extension == ".pdf" else 'application/'+extension.replace(".","")),
+        ('Content-Disposition', 'attachment; filename=' + title + extension),
         ('Content-Transfer-Encoding', 'binary')
     ]
     set_cors(response_headers, environ)
