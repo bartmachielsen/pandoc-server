@@ -9,7 +9,6 @@ from tempfile import mkdtemp, mkstemp
 
 def pandoc(m, hl=None, tar=None, template=None):
 
-
     td = None
     if tar and template is None:
         raise Exception("tar given but no template name")
@@ -42,7 +41,7 @@ def pandoc(m, hl=None, tar=None, template=None):
         f = open(tp,'r')
         ret = f.read()
         f.close()
-    except Exception, e:
+    except Exception as e:
         logging.exception(e)
         raise Exception(e)
     finally:
@@ -67,6 +66,7 @@ def set_cors(response_headers, environ):
         response_headers.append(('Access-Control-Allow-Headers', ach))
 
 def app(environ, start_response):
+    logging.debug("Request received!")
     post = FieldStorage(
             fp = environ['wsgi.input'],
             environ = environ,
@@ -88,15 +88,15 @@ def app(environ, start_response):
     hl = post['hl'].value if 'hl' in post else None
     title = post['t'].value if 't' in post else 'pandoc_generated'
     template = post['tpl'].value if 'tpl' in post else None
-    tar = post['tar'] if 'tar' in post else None
+    tar = post['tar'] if 'tar'  in post else None
 
     try:
         pdf = pandoc(m, hl, tar, template)
-    except Exception, e:
+    except Exception as e:
         response_headers = [('Content-Type', 'text/plain')]
         set_cors(response_headers, environ)
         start_response('500 InternalServerError', response_headers)
-        return ["Something went wrong...",e.message]
+        return ["Something went wrong...", str(e)]
 
     response_headers = [
         ('Content-Type', 'application/pdf'),
@@ -105,11 +105,14 @@ def app(environ, start_response):
     ]
     set_cors(response_headers, environ)
     start_response('200 OK', response_headers)
+    logging.debug("Returning response")
     return [pdf]
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format="%(levelname)8s  [%(asctime)s] %(module)10s:%(lineno)4d] \t  %(message)s")
+
     from wsgiref.simple_server import make_server
-    srv = make_server('localhost', 8080, app)
-    logging.info("Listening 8080")
+    srv = make_server('0.0.0.0', 8080, app)
+    logging.info("Listening on http://localhost:8080")
     srv.serve_forever()
