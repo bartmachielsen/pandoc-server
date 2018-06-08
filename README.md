@@ -50,7 +50,7 @@ Eache value are sent as POST forma data:
 - "hl": default is None, give the hightlight theme for syntax hightlight blocks
 - "tpl": give the template file to use (latex only for now), this file should be contained at root at the tarball
 - "tar": tarball file containing template, images, sty file and so on. 
-- "extension": the target extension (default: .pdf, alternatives: .html, .wordx etc etc (see pandoc documentation))
+- "extension": the target extension (default: .pdf, alternatives: .html, .docx  etc etc (see pandoc documentation))
 
 Note that the server will untar the template archive and change working dir to the root of the tarball content, so you may tar you template folder at root.
 
