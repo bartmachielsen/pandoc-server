@@ -27,6 +27,20 @@ gunincorn -w 4 -b 0.0.0.0:8000 main:app
 
 The service listens now the `:8000` port where you can POST data.
 
+## Docker
+An docker implementation has been added, to build and run (server runs on port 8080) execute:
+
+```bash
+docker-compose up
+```
+
+or:
+
+```bash
+docker pull bartmachielsen\pandoc-server:latest
+docker run -p 8080:8080 pandoc-server:latest
+```
+
 # POST Data
 
 Eache value are sent as POST forma data:
@@ -36,6 +50,7 @@ Eache value are sent as POST forma data:
 - "hl": default is None, give the hightlight theme for syntax hightlight blocks
 - "tpl": give the template file to use (latex only for now), this file should be contained at root at the tarball
 - "tar": tarball file containing template, images, sty file and so on. 
+- "extension": the target extension (default: .pdf, alternatives: .html, .wordx etc etc (see pandoc documentation))
 
 Note that the server will untar the template archive and change working dir to the root of the tarball content, so you may tar you template folder at root.
 
@@ -69,11 +84,23 @@ my.sty
 
 And you can now try:
 
+## PDF
+
 ```bash
 curl -X POST \
     -F "tar=@your-template.tgz" \
     -F "tpl=mytemplate.tex" \
-    -F "m=@my-markdown-content.md" > out.pdf
+    -F "m=@my-markdown-content.md" > out.pdf \
+    -F "extension=.pdf"
+
 ```
 
+## DOCX
+
+```bash
+curl -X POST \
+    -F "m=@my-markdown-content.md" > out.pdf \
+    -F "extension=.docx"
+
+```
 
